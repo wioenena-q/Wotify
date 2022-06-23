@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import { AuthContextProvider } from "./contexts/AuthContext";
-import { type IUser, UserContextProvider } from "./contexts/UserContext";
+import { UserContextProvider } from "./contexts/UserContext";
 import Dashboard from "./pages/Dashboard";
 import { API_URL } from "./utils/constants";
+import { hasPermission } from "./utils/permissions";
+import type { IUser } from "./utils/types";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,8 +22,11 @@ function App() {
             setIsAuthenticated(false);
           }
         })
-        .then((data) => {
+        .then((data: IUser) => {
           if (data) {
+            data.guilds = data.guilds.filter((guild) =>
+              hasPermission(guild.permissions, "MANAGE_GUILD")
+            );
             setUser(data);
           }
         })
@@ -31,7 +36,6 @@ function App() {
         });
     }
   }, []);
-  console.log(user);
 
   useEffect(() => {
     if (!isAuthenticated) setUser(null);
